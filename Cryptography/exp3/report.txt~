@@ -1,0 +1,114 @@
+算法流程:
+	可以参看书上图片
+
+算法原理:
+	DES使用一个56位的密钥以及附加的8位(奇偶校验位), 产生最大 64 位的分组大小。通过使用Feistel的加密形式, 对明文进行加密.
+	其中密钥通常表示为64位的自然数,首先通过压缩换位PC-1去掉每个字节的第8位, 所以实际密钥长度为56位,而每轮迭代要生成48位的子密钥。
+	一共进行16轮
+
+加密输入输出测试:
+
+sage: load("DES.sage")
+/*** DES Algorithm ***/
+Encrypt(0) or Decrypt(1) : (0/1) 0
+Cipher (16 Hex digits) : 0f1571c947d9e859
+PlainText(Hex) : 02468aceeca86420
+======== DES Start ========
+
+Input : 		 02468aceeca86420
+
+After IP :		 5a005a003cf03c0f
+
+Round 0 :	000000000000(Key)	5a005a00(L)	3cf03c0f(R)
+
+Round 1 :	7833c320da70(Key)	3cf03c0f(L)	bad22845(R)
+
+Round 2 :	2b1a74ca48d8(Key)	bad22845(L)	99e9b723(R)
+
+Round 3 :	8c78d881d31d(Key)	99e9b723(L)	0bae3b9e(R)
+
+Round 4 :	1667789316a0(Key)	0bae3b9e(L)	42415649(R)
+
+Round 5 :	ce5d01d80b25(Key)	42415649(L)	18b3fa41(R)
+
+Round 6 :	4bab4d126a9c(Key)	18b3fa41(L)	9616fe23(R)
+
+Round 7 :	09f48b713191(Key)	9616fe23(L)	67117cf2(R)
+
+Round 8 :	710deaa3202b(Key)	67117cf2(L)	c11bfc09(R)
+
+Round 9 :	129ab83347c3(Key)	c11bfc09(L)	887fbc6c(R)
+
+Round 10 :	9c38661e8103(Key)	887fbc6c(L)	600f7e8b(R)
+
+Round 11 :	a26e4cc66544(Key)	600f7e8b(L)	f596506e(R)
+
+Round 12 :	48772468a3c8(Key)	f596506e(L)	738538b8(R)
+
+Round 13 :	c09d79f0d40b(Key)	738538b8(L)	c6a62c4e(R)
+
+Round 14 :	c5e2634e162a(Key)	c6a62c4e(L)	56b0bd75(R)
+
+Round 15 :	a3df829c7968(Key)	56b0bd75(L)	75e8fd8f(R)
+
+Round 16 :	a6120b4d4c25(Key)	75e8fd8f(L)	25896490(R)
+
+Finally Swap L & R :	 2589649075e8fd8f
+
+After IP_inv : 		 da02ce3a89ecac3b
+
+Final Answer : da02ce3a89ecac3b
+
+
+解密输入输出测试:
+
+/*** DES Algorithm ***/
+Encrypt(0) or Decrypt(1) : (0/1) 1
+Cipher (16 Hex digits) : 0f1571c947d9e859
+CipherText(Hex) : da02ce3a89ecac3b
+======== DES Start ========
+
+Input : 		 da02ce3a89ecac3b
+
+After IP :		 2589649075e8fd8f
+
+Round 0 :	000000000000(Key)	25896490(L)	75e8fd8f(R)
+
+Round 1 :	a6120b4d4c25(Key)	75e8fd8f(L)	56b0bd75(R)
+
+Round 2 :	a3df829c7968(Key)	56b0bd75(L)	c6a62c4e(R)
+
+Round 3 :	c5e2634e162a(Key)	c6a62c4e(L)	738538b8(R)
+
+Round 4 :	c09d79f0d40b(Key)	738538b8(L)	f596506e(R)
+
+Round 5 :	48772468a3c8(Key)	f596506e(L)	600f7e8b(R)
+
+Round 6 :	a26e4cc66544(Key)	600f7e8b(L)	887fbc6c(R)
+
+Round 7 :	9c38661e8103(Key)	887fbc6c(L)	c11bfc09(R)
+
+Round 8 :	129ab83347c3(Key)	c11bfc09(L)	67117cf2(R)
+
+Round 9 :	710deaa3202b(Key)	67117cf2(L)	9616fe23(R)
+
+Round 10 :	09f48b713191(Key)	9616fe23(L)	18b3fa41(R)
+
+Round 11 :	4bab4d126a9c(Key)	18b3fa41(L)	42415649(R)
+
+Round 12 :	ce5d01d80b25(Key)	42415649(L)	0bae3b9e(R)
+
+Round 13 :	1667789316a0(Key)	0bae3b9e(L)	99e9b723(R)
+
+Round 14 :	8c78d881d31d(Key)	99e9b723(L)	bad22845(R)
+
+Round 15 :	2b1a74ca48d8(Key)	bad22845(L)	3cf03c0f(R)
+
+Round 16 :	7833c320da70(Key)	3cf03c0f(L)	5a005a00(R)
+
+Finally Swap L & R :	 5a005a003cf03c0f
+
+After IP_inv : 		 02468aceeca86420
+
+Final Answer : 02468aceeca86420
+

@@ -1,0 +1,375 @@
+3轮差分攻击:
+
+原理:
+	每次取两个明密文对进行操作, 根据两者之间的异或和进行差分攻击. 
+	因为异或和可以将置换操作跳过, 即有如下性质: P(A) ^ P(B) = P(A ^ B)
+	
+流程:
+	主要是通过将加密的过程一步步进行分解, 并且对其进行破解.
+	
+	输入L_0, R_0, L_0*, R_0*, L_3, R_3, L_3*, R_3* (即这些变量已知, 其中 X' = X ^ X*)
+	因为 R_3 = L_2 ^ F(R_2) = L_0 ^ F(R_0) ^ F(R_2)
+	同理有 R_3* = L_0* ^ F(R_0*) ^ F(R_2*)
+	所以 R_3' = R_3 ^ R_3* = L_0 ^ L_0* ^ F(R_0) ^ F(R_0*) ^ F(R_2) ^ F(R_2*)
+	将R_0 = R_0*
+	则有 R_3' = L_0' ^ F(R_2) ^ F(R_2*)
+	
+	因此 F(R_2) ^ F(R_2*) = R_3' ^ L_0' 已知
+	接下来分解 F(R_2) ^ F(R_2*)
+	令IN(B', C') = {B | S(B) ^ S(B*) = C'} 其中B* = B ^ B'
+	则可以知道 可能的Key = {B ^ E | B 属于 IN(E', C')}
+	
+	如此可以获得多个Key, 取它们的交集即可. 直到所有集合只剩下一个元素.
+
+	要注意的几个细节:
+		1. 每次保证R_0 = R_0*需要根据IP置换表查看, 即要使得输入值奇数位要相同, 才能使得IP置换后的R_0 = R_0*.
+		2. 最后一次的左右互换记得要换回来.
+		3. 开头和最后都是经过IP置换.
+
+以下是输入数据:
+
+P1			C1			P2			C2
+02468aceeca86420  	ee5f19f58d3e20b9	5713df9bb9fd3175	7df7691c3f3f7b7a
+8765432112345678	679bb0b496aa159f	d23016744761032d	e36b490f2f8fd64c
+1112223334445556	7a17569e2caad56a	4447776661110003	1c7640805819f6d7
+
+(明文P1可以随机选取输入, 不过这里为了方便需要手动输入, 上述明文P1是我编出来的, P2是将P1奇数位不变,偶数位取反得到, 因为为了使得IP变换之后R0和R0*相等)
+
+感想:
+	大概花了几天的时间才调试出来, 大量时间用于手算, 效率低, 不过主要还是一些细节错误. 比如最后的交换和开头的保证R_0和R_0*相同的处理上. 不过对于3轮差分攻击理解也比较透彻了.
+
+
+输入输出样例检测:(输入必须保证明文对的奇数位相同, 偶数位不同!!!)
+
+/********  diff attack  ********/
+P1(hex) : 02468aceeca86420
+C1(hex) : ee5f19f58d3e20b9
+P2(hex) : 5713df9bb9fd3175
+C2(hex) : 7df7691c3f3f7b7a
+======= Attack 1 =======
+Key Set Status :
+	Key 1 : 	[16, 25, 42, 35]
+	Key 2 : 	[34, 43, 37, 7, 40, 41, 11, 61, 49, 19, 20, 62, 8, 29, 30, 31]
+	Key 3 : 	[0, 35, 29, 62]
+	Key 4 : 	[24, 59, 36, 7]
+	Key 5 : 	[32, 2, 41, 11, 50, 51, 55, 58, 59, 62]
+	Key 6 : 	[56, 8, 45, 29]
+	Key 7 : 	[32, 54, 12, 44, 46, 52, 22, 58]
+	Key 8 : 	[29, 48, 19, 30, 61, 62]
+!!!!!  Still Need PlainTexts and CipherTexts  !!!!!
+P1(hex) : 8765432112345678
+C1(hex) : 679bb0b496aa159f
+P2(hex) : d23016744761032d
+C2(hex) : e36b490f2f8fd64c
+======= Attack 2 =======
+Key Set Status :
+	Key 1 : 	[16, 35]
+	Key 2 : 	[7]
+	Key 3 : 	[35]
+	Key 4 : 	[24, 36]
+	Key 5 : 	[32, 55]
+	Key 6 : 	[29]
+	Key 7 : 	[12]
+	Key 8 : 	[29]
+!!!!!  Still Need PlainTexts and CipherTexts  !!!!!
+P1(hex) : 1112223334445556
+C1(hex) : 7a17569e2caad56a
+P2(hex) : 4447776661110003
+C2(hex) : 1c7640805819f6d7
+======= Attack 3 =======
+Key Set Status :
+	Key 1 : 	[35]
+	Key 2 : 	[7]
+	Key 3 : 	[35]
+	Key 4 : 	[24]
+	Key 5 : 	[32]
+	Key 6 : 	[29]
+	Key 7 : 	[12]
+	Key 8 : 	[29]
+!!!!!  Still Need PlainTexts and CipherTexts  !!!!!
+Start Enumerate the rest 8bit :
+enumerate 0, correct Number 0: 
+enumerate 1, correct Number 0: 
+enumerate 2, correct Number 0: 
+enumerate 3, correct Number 0: 
+enumerate 4, correct Number 0: 
+enumerate 5, correct Number 0: 
+enumerate 6, correct Number 0: 
+enumerate 7, correct Number 0: 
+enumerate 8, correct Number 0: 
+enumerate 9, correct Number 0: 
+enumerate 10, correct Number 0: 
+enumerate 11, correct Number 0: 
+enumerate 12, correct Number 0: 
+enumerate 13, correct Number 0: 
+enumerate 14, correct Number 0: 
+enumerate 15, correct Number 0: 
+enumerate 16, correct Number 0: 
+enumerate 17, correct Number 0: 
+enumerate 18, correct Number 0: 
+enumerate 19, correct Number 0: 
+enumerate 20, correct Number 0: 
+enumerate 21, correct Number 0: 
+enumerate 22, correct Number 0: 
+enumerate 23, correct Number 0: 
+enumerate 24, correct Number 0: 
+enumerate 25, correct Number 0: 
+enumerate 26, correct Number 0: 
+enumerate 27, correct Number 0: 
+enumerate 28, correct Number 0: 
+enumerate 29, correct Number 0: 
+enumerate 30, correct Number 0: 
+enumerate 31, correct Number 0: 
+enumerate 32, correct Number 0: 
+enumerate 33, correct Number 0: 
+enumerate 34, correct Number 0: 
+enumerate 35, correct Number 0: 
+enumerate 36, correct Number 0: 
+enumerate 37, correct Number 0: 
+enumerate 38, correct Number 0: 
+enumerate 39, correct Number 0: 
+enumerate 40, correct Number 0: 
+enumerate 41, correct Number 0: 
+enumerate 42, correct Number 0: 
+enumerate 43, correct Number 0: 
+enumerate 44, correct Number 0: 
+enumerate 45, correct Number 0: 
+enumerate 46, correct Number 0: 
+enumerate 47, correct Number 0: 
+enumerate 48, correct Number 0: 
+enumerate 49, correct Number 0: 
+enumerate 50, correct Number 0: 
+enumerate 51, correct Number 0: 
+enumerate 52, correct Number 0: 
+enumerate 53, correct Number 0: 
+enumerate 54, correct Number 0: 
+enumerate 55, correct Number 0: 
+enumerate 56, correct Number 0: 
+enumerate 57, correct Number 0: 
+enumerate 58, correct Number 0: 
+enumerate 59, correct Number 0: 
+enumerate 60, correct Number 0: 
+enumerate 61, correct Number 0: 
+enumerate 62, correct Number 0: 
+enumerate 63, correct Number 0: 
+enumerate 64, correct Number 0: 
+enumerate 65, correct Number 0: 
+enumerate 66, correct Number 0: 
+enumerate 67, correct Number 0: 
+enumerate 68, correct Number 0: 
+enumerate 69, correct Number 0: 
+enumerate 70, correct Number 0: 
+enumerate 71, correct Number 0: 
+enumerate 72, correct Number 0: 
+enumerate 73, correct Number 0: 
+enumerate 74, correct Number 0: 
+enumerate 75, correct Number 0: 
+enumerate 76, correct Number 0: 
+enumerate 77, correct Number 0: 
+enumerate 78, correct Number 0: 
+enumerate 79, correct Number 0: 
+enumerate 80, correct Number 0: 
+enumerate 81, correct Number 0: 
+enumerate 82, correct Number 0: 
+enumerate 83, correct Number 0: 
+enumerate 84, correct Number 0: 
+enumerate 85, correct Number 0: 
+enumerate 86, correct Number 0: 
+enumerate 87, correct Number 0: 
+enumerate 88, correct Number 0: 
+enumerate 89, correct Number 0: 
+enumerate 90, correct Number 0: 
+enumerate 91, correct Number 0: 
+enumerate 92, correct Number 0: 
+enumerate 93, correct Number 0: 
+enumerate 94, correct Number 0: 
+enumerate 95, correct Number 0: 
+enumerate 96, correct Number 0: 
+enumerate 97, correct Number 0: 
+enumerate 98, correct Number 0: 
+enumerate 99, correct Number 0: 
+enumerate 100, correct Number 0: 
+enumerate 101, correct Number 0: 
+enumerate 102, correct Number 0: 
+enumerate 103, correct Number 0: 
+enumerate 104, correct Number 0: 
+enumerate 105, correct Number 0: 
+enumerate 106, correct Number 0: 
+enumerate 107, correct Number 0: 
+enumerate 108, correct Number 0: 
+enumerate 109, correct Number 0: 
+enumerate 110, correct Number 0: 
+enumerate 111, correct Number 0: 
+enumerate 112, correct Number 0: 
+enumerate 113, correct Number 0: 
+enumerate 114, correct Number 0: 
+enumerate 115, correct Number 0: 
+enumerate 116, correct Number 0: 
+enumerate 117, correct Number 0: 
+enumerate 118, correct Number 0: 
+enumerate 119, correct Number 0: 
+enumerate 120, correct Number 0: 
+enumerate 121, correct Number 0: 
+enumerate 122, correct Number 0: 
+enumerate 123, correct Number 0: 
+enumerate 124, correct Number 0: 
+enumerate 125, correct Number 0: 
+enumerate 126, correct Number 0: 
+enumerate 127, correct Number 0: 
+enumerate 128, correct Number 0: 
+enumerate 129, correct Number 0: 
+enumerate 130, correct Number 0: 
+enumerate 131, correct Number 0: 
+enumerate 132, correct Number 0: 
+enumerate 133, correct Number 0: 
+enumerate 134, correct Number 6: 
+Key (after PC_1): 68fc44a1113e96
+
+
+以下是上面6个明文及其对应的密文的生成过程,都是直接调用DES.sage的生成出来的.
+
+/******************************************** P1 / C1 created	[0]
+
+Cipher (16 Hex digits) : 0f1571c947d9e859
+PlainText(Hex) : 02468aceeca86420
+
+======== DES Start ========
+
+Input : 		 02468aceeca86420
+
+After IP :		 5a005a003cf03c0f
+
+Round 0 :	000000000000(Key)	5a005a00(L)	3cf03c0f(R)
+
+Round 1 :	7833c320da70(Key)	3cf03c0f(L)	bad22845(R)
+
+Round 2 :	2b1a74ca48d8(Key)	bad22845(L)	99e9b723(R)
+
+Round 3 :	8c78d881d31d(Key)	99e9b723(L)	0bae3b9e(R)
+
+Finally Swap L & R :	 0bae3b9e99e9b723
+
+After IP_inv : 		 ee5f19f58d3e20b9
+
+Final Answer : ee5f19f58d3e20b9
+
+/******************************************** P2 / C2 created	[0]
+
+Cipher (16 Hex digits) : 0f1571c947d9e859
+PlainText(Hex) : 5713df9bb9fd3175
+======== DES Start ========
+
+Input : 		 5713df9bb9fd3175
+
+After IP :		 a5ffa5ff3cf03c0f
+
+Round 0 :	000000000000(Key)	a5ffa5ff(L)	3cf03c0f(R)
+
+Round 1 :	7833c320da70(Key)	3cf03c0f(L)	452dd7ba(R)
+
+Round 2 :	2b1a74ca48d8(Key)	452dd7ba(L)	02f7fdf2(R)
+
+Round 3 :	8c78d881d31d(Key)	02f7fdf2(L)	c7fb3b77(R)
+
+Finally Swap L & R :	 c7fb3b7702f7fdf2
+
+After IP_inv : 		 7df7691c3f3f7b7a
+
+Final Answer : 7df7691c3f3f7b7a
+
+/******************************************** P1 / C1 created	[1]
+
+Cipher (16 Hex digits) : 0f1571c947d9e859
+PlainText(Hex) : 8765432112345678
+======== DES Start ========
+
+Input : 		 8765432112345678
+
+After IP :		 c6f0630f01aa8055
+
+Round 0 :	000000000000(Key)	c6f0630f(L)	01aa8055(R)
+
+Round 1 :	7833c320da70(Key)	01aa8055(L)	35fc161a(R)
+
+Round 2 :	2b1a74ca48d8(Key)	35fc161a(L)	be2da2b3(R)
+
+Round 3 :	8c78d881d31d(Key)	be2da2b3(L)	01ded9c3(R)
+
+Finally Swap L & R :	 01ded9c3be2da2b3
+
+After IP_inv : 		 679bb0b496aa159f
+
+Final Answer : 679bb0b496aa159f
+
+
+/******************************************** P2 / C2 created	[1]
+
+Cipher (16 Hex digits) : 0f1571c947d9e859
+PlainText(Hex) : d23016744761032d
+======== DES Start ========
+
+Input : 		 d23016744761032d
+
+After IP :		 390f9cf001aa8055
+
+Round 0 :	000000000000(Key)	390f9cf0(L)	01aa8055(R)
+
+Round 1 :	7833c320da70(Key)	01aa8055(L)	ca03e9e5(R)
+
+Round 2 :	2b1a74ca48d8(Key)	ca03e9e5(L)	6113be7b(R)
+
+Round 3 :	8c78d881d31d(Key)	6113be7b(L)	c740f83f(R)
+
+Finally Swap L & R :	 c740f83f6113be7b
+
+After IP_inv : 		 e36b490f2f8fd64c
+
+Final Answer : e36b490f2f8fd64c
+
+/******************************************** P1 / C1 created	[2]
+
+Cipher (16 Hex digits) : 0f1571c947d9e859
+PlainText(Hex) : 1112223334445556
+======== DES Start ========
+
+Input : 		 1112223334445556
+
+After IP :		 e0dbf049001c008e
+
+Round 0 :	000000000000(Key)	e0dbf049(L)	001c008e(R)
+
+Round 1 :	7833c320da70(Key)	001c008e(L)	4cb423f7(R)
+
+Round 2 :	2b1a74ca48d8(Key)	4cb423f7(L)	68b1b9af(R)
+
+Round 3 :	8c78d881d31d(Key)	68b1b9af(L)	c54f5e42(R)
+
+Finally Swap L & R :	 c54f5e4268b1b9af
+
+After IP_inv : 		 7a17569e2caad56a
+
+Final Answer : 7a17569e2caad56a
+
+/******************************************** P2 / C2 created	[2]
+
+Cipher (16 Hex digits) : 0f1571c947d9e859
+PlainText(Hex) : 4447776661110003
+======== DES Start ========
+
+Input : 		 4447776661110003
+
+After IP :		 1f240fb6001c008e
+
+Round 0 :	000000000000(Key)	1f240fb6(L)	001c008e(R)
+
+Round 1 :	7833c320da70(Key)	001c008e(L)	b34bdc08(R)
+
+Round 2 :	2b1a74ca48d8(Key)	b34bdc08(L)	c84231c2(R)
+
+Round 3 :	8c78d881d31d(Key)	c84231c2(L)	d6f3c3a0(R)
+
+Finally Swap L & R :	 d6f3c3a0c84231c2
+
+After IP_inv : 		 1c7640805819f6d7
+
+Final Answer : 1c7640805819f6d7

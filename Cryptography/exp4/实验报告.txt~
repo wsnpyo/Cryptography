@@ -1,0 +1,165 @@
+不好意思,助教,目前就只做AES加解密,至于之后的差分分析,如果以后有做的话我再发给您.
+
+AES算法:
+
+1. 算法原理:
+	为了利用乘法逆提供非线性, 因此需要利用到有限域, 而8字节=256bit不是一个素数,因此不能将N256作为有限域, 因此利用基于有限域GF(2^8)下能够避免上述弊端. 其中不可约多项式是x^8+x^4+x^3+x+1.其中乘法可以通过移位快速得到. 
+	轮密钥加阶段是通过在开头和结尾使用轮密钥加,可以防止破解密码时直接求逆(比如DES),只在这个阶段上用到密钥,其他三个阶段提供混淆,扩散,和非线性功能.
+
+2. 算法流程:
+
+加解密基本操作:
+	将明/密文转化为4*4的方阵,每一格中保存一个字节,即2位16进制数
+	字节替代: 利用S盒将所有字节进行替代(第一个数选择行,第二个数选择列)
+	行移位:第i行循环左移i-1位
+	列混淆:利用Rcon与方阵做在有限域GF(2^8)下的矩阵乘法运算
+	轮密钥加:利用子密钥与方阵异或
+
+	以上操作均可逆,解密时逆操作即可.
+
+密钥生成:
+	对于第i%4 = 0的密钥列 有 w[i] = Subword(rotword(w[i-1])) ^ Rcon[i/4] ^ w[i-4]
+	对于其他密钥列 有 w[i] = w[i-1] ^ w[i-4]
+	
+
+3. 加密与解密输入输出样例:(与书本相同)
+
+sage: load("AES.sage")
+/*******  AES  *******/
+Encrypt(0) or Decrypt(1) : 0			//加密
+Cipher(32-Hex) : 0f1571c947d9e8590cb7add6af7f6798
+PlainText(32-Hex) : 0123456789abcdeffedcba9876543210
+>>> PlainText :
+	1 89 fe 76 
+	23 ab dc 54 
+	45 cd ba 32 
+	67 ef 98 10 
+>>> Round  0
+	e ce f2 d9 
+	36 72 6b 2b 
+	34 25 17 55 
+	ae b6 4e 88 
+>>> Round  1
+	65 f c0 4d 
+	74 c7 e8 d0 
+	70 ff e8 2a 
+	75 3f ca 9c 
+>>> Round  2
+	5c 6b 5 f4 
+	7b 72 a2 6d 
+	b4 34 31 12 
+	9a 9b 7f 94 
+>>> Round  3
+	71 48 5c 7d 
+	15 dc da a9 
+	26 74 c7 bd 
+	24 7e 22 9c 
+>>> Round  4
+	f8 b4 c 4c 
+	67 37 24 ff 
+	ae a5 c1 ea 
+	e8 21 97 bc 
+>>> Round  5
+	72 ba cb 4 
+	1e 6 d4 fa 
+	b2 20 bc 65 
+	0 6d e7 4e 
+>>> Round  6
+	a 89 c1 85 
+	d9 f9 c5 e5 
+	d8 f7 f7 fb 
+	56 7b 11 14 
+>>> Round  7
+	db a1 f8 77 
+	18 6d 8b ba 
+	a8 30 8 4e 
+	ff d5 d7 aa 
+>>> Round  8
+	f9 e9 8f 2b 
+	1b 34 2f 8 
+	4f c9 85 49 
+	bf bf 81 89 
+>>> Round  9
+	cc 3e ff 3b 
+	a1 67 59 af 
+	4 85 2 aa 
+	a1 0 5f 34 
+>>> Round  10
+	ff 8 69 64 
+	b 53 34 14 
+	84 bf ab 8f 
+	4a 7c 43 b9 
+>>> Final CipherText :
+ff0b844a0853bf7c6934ab4364148fb9
+sage: load("AES.sage")
+/*******  AES  *******/
+Encrypt(0) or Decrypt(1) : 1			// 解密
+Cipher(32-Hex) : 0f1571c947d9e8590cb7add6af7f6798
+CipherText(32-Hex) : ff0b844a0853bf7c6934ab4364148fb9
+>>> CipherText :
+	ff 8 69 64 
+	b 53 34 14 
+	84 bf ab 8f 
+	4a 7c 43 b9 
+>>> Round  10
+	4b b2 16 e2 
+	85 cb 79 32 
+	77 ac f2 97 
+	18 32 63 cf 
+>>> Round  9
+	99 1e 73 f1 
+	18 15 30 af 
+	97 3b 84 dd 
+	a7 8 8 c 
+>>> Round  8
+	b9 32 41 f5 
+	3c 3d f4 ad 
+	30 2f c2 4 
+	ac 16 3 e 
+>>> Round  7
+	67 a7 78 97 
+	99 a6 d9 35 
+	68 f 61 68 
+	fa b1 21 82 
+>>> Round  6
+	40 f4 1f f2 
+	6f 48 2d 72 
+	65 4d 37 b7 
+	2f 63 3c 94 
+>>> Round  5
+	41 8d fe 29 
+	9a 36 16 85 
+	78 87 e4 6 
+	65 9b fd 88 
+>>> Round  4
+	a3 52 4a ff 
+	86 57 d3 59 
+	c6 7a f7 92 
+	de 36 f3 93 
+>>> Round  3
+	4a 7f 6b bf 
+	40 3a 3c 21 
+	c7 c9 8d 18 
+	22 b8 14 d2 
+>>> Round  2
+	4d 76 ba e3 
+	c6 9b 70 92 
+	9b e5 51 16 
+	de 9d 75 74 
+>>> Round  1
+	ab 8b 89 35 
+	40 7f f1 5 
+	f0 fc 18 3f 
+	c4 e4 4e 2f 
+>>> Round  0
+	1 89 fe 76 
+	23 ab dc 54 
+	45 cd ba 32 
+	67 ef 98 10 
+>>> Final PlainText :
+0123456789abcdeffedcba9876543210
+
+
+感想:
+	AES和DES都是泡了好久才慢慢弄出来的, 虽然最后发现都是小错误.
+	不过, 感觉以后应该把整个原理可以通过写代码来理清思路,并不必要一开始要完全弄懂才开始写. 在写代码的过程中就可以将整个算法分解, 思路会豁然开朗!!!
